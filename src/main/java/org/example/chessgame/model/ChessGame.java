@@ -1,4 +1,5 @@
 package org.example.chessgame.model;
+import org.example.chessgame.rules.MoveValidator;
 
 public class ChessGame {
 
@@ -21,6 +22,11 @@ public class ChessGame {
 
     public boolean movePiece(Position from, Position to) {
         String piece = board[from.getRow()][from.getCol()];
+        String target = board[to.getRow()][to.getCol()];
+
+        if (!MoveValidator.isLegalMove(board, piece, from, to)) {
+            return false;
+        }
 
         if (piece == null || piece.isEmpty()) {
             return false;
@@ -29,6 +35,12 @@ public class ChessGame {
         // Validate turn
         if (whiteTurn && !Character.isUpperCase(piece.charAt(0))) return false;
         if (!whiteTurn && !Character.isLowerCase(piece.charAt(0))) return false;
+
+        if (target != null && !target.isEmpty()) {
+            if (Character.isUpperCase(piece.charAt(0)) == Character.isUpperCase(target.charAt(0))) {
+                return false;
+            }
+        }
 
         // Basic movement: allow any move
         board[to.getRow()][to.getCol()] = piece;
