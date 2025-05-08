@@ -3,7 +3,6 @@
     box-sizing: border-box;
 }
 
-
 body {
     font-family: 'Segoe UI', sans-serif;
     background: #7a3232;
@@ -15,151 +14,43 @@ body {
     color: #333;
 }
 
-/* Navbar */
-nav {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 10px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-nav h1 {
-    margin: 0;
-    font-size: 24px;
-}
-
-nav button {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-nav button:hover {
-    background: #45a049;
-}
-
-/* Layout Container */
-#game-container {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 30px;
-}
-
-/* Chessboard Grid */
-#chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 60px);
-    grid-template-rows: repeat(8, 60px);
-    border: 3px solid #333;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.square {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.light {
-    background-color: #f0d9b5;
-}
-
-.dark {
-    background-color: #b58863;
-}
-
-/* Sidebar Styles */
-#sidebar {
-    width: 240px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-#sidebar h2 {
-    font-size: 22px;
-    margin-bottom: 10px;
-}
-
-#sidebar h3 {
-    font-size: 18px;
-    margin-top: 20px;
-    margin-bottom: 8px;
-}
-
-#turn-display {
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 15px;
-}
-
-/* Move History */
-#move-history {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-    max-height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    padding: 8px;
-    border-radius: 4px;
-    background: #fafafa;
-}
-
-#move-history li {
-    font-size: 14px;
-    padding: 2px 0;
-}
-
-/* Timers */
-#sidebar div span {
-    font-weight: bold;
-    font-family: monospace;
-    font-size: 16px;
-    color: #333;
-}
-
-/* Buttons (Used on welcome/mode pages) */
-button {
-    padding: 10px 20px;
-    font-size: 18px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-button:hover {
-    background: #45a049;
-}
-
-/* Centering for welcome and mode pages */
 body.centered {
+    background-image: url("images/background.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
     height: 100vh;
     justify-content: center;
+    position: relative;
     align-items: center;
     display: flex;
     flex-direction: column;
     text-align: center;
+    color: white;
 }
 
+/* Welcome Page Text */
+.text-above {
+    position: absolute;
+    top: 165px;
+    width: 100%;
+    text-align: center;
+    font-size: 75px;
+    font-weight: bold;
+}
+
+.text-below {
+    position: absolute;
+    bottom: 150px;
+    width: 100%;
+    text-align: center;
+    font-size: 40px;
+}
+
+/* Navbar */
 nav {
     position: fixed;
     top: 0;
@@ -181,17 +72,203 @@ nav h1 {
     flex: 1;
 }
 
-body.centered {
-    height: 100vh;
-    padding-top: 80px; /* offset for fixed navbar */
+nav button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+nav button:hover {
+    background: #45a049;
+}
+
+/* Game Layout */
+#game-container {
+    display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    gap: 40px;
+    margin-top: 10px;
+}
+
+
+#left-side {
     display: flex;
     flex-direction: column;
+    align-items: center;
+}
+
+/* Chessboard */
+#chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 75px);
+    grid-template-rows: repeat(8, 75px);
+    border: 3px solid #333;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Squares */
+.square {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    cursor: pointer;
+    width: 75px;
+    height: 75px;
+    box-sizing: border-box;
+}
+
+.light {
+    background-color: #f0d9b5;
+}
+
+.dark {
+    background-color: #b58863;
+}
+
+.square.hover-valid {
+    border: 2px solid limegreen;
+}
+
+.square.hover-invalid {
+    border: 2px solid red;
+}
+
+.square.valid-move {
+    border: 2px solid limegreen;
+}
+
+/* Captured Piece Bars */
+.capture-bar {
+    width: 100%;
+    height: 50px;
+    background-color: #e0f4ff;
+    border-radius: 6px;
+    margin: 6px 0;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 4px 6px;
+    font-size: 28px;
+    gap: 6px;
+}
+
+/* Sidebar */
+#sidebar {
+    width: 260px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 730px;
+}
+
+#sidebar h2,
+#sidebar h3,
+#turn-display {
     text-align: center;
 }
 
-/* Dropdown Styles */
+#sidebar h2 {
+    font-size: 22px;
+    margin-top: 0px;
+}
+
+#sidebar h3 {
+    font-size: 18px;
+    margin-top: 0px;
+}
+
+/* Timer */
+#timer-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    background-color: #e1f0ff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.player-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.player-timer label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.player-timer span {
+    font-size: 18px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+/* Turn Display */
+#turn-display {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+/* Move History */
+#move-history {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 4px;
+    background: #fafafa;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+#move-history li {
+    padding: 2px 0;
+}
+
+/* Reset Button */
+#reset-container {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#reset-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#reset-button:hover {
+    background-color: #c9302c;
+}
+
+/* Dropdown */
 .dropdown {
     position: relative;
     display: flex;
@@ -225,7 +302,6 @@ body.centered {
     z-index: 1;
 }
 
-
 .dropdown-content a {
     color: black;
     padding: 10px 16px;
@@ -239,75 +315,4 @@ body.centered {
 
 .dropdown:hover .dropdown-content {
     display: block;
-}
-#timer-box {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 10px;
-    background-color: #e1f0ff;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 15px;
-}
-
-.player-timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-}
-
-.player-timer label {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 4px;
-}
-
-.player-timer span {
-    font-size: 18px;
-    font-family: monospace;
-    font-weight: bold;
-}
-
-#left-side {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.capture-bar {
-    width: 100%;
-    height: 50px;
-    background-color: #e0f4ff;
-    border-radius: 6px;
-    margin: 6px 0;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    padding: 4px 6px;
-    font-size: 28px;
-    gap: 6px;
-}
-
-.square {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 36px;
-    cursor: pointer;
-    box-sizing: border-box; /* ✅ Fixes partial border issue */
-}
-
-
-.square.hover-valid {
-    border: 2px solid limegreen;
-}
-
-.square.hover-invalid {
-    border: 2px solid red;
-}
-
-.square.valid-move {
-    border: 2px solid limegreen;
 }

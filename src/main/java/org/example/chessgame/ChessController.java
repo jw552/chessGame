@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/chess")
 public class ChessController {
 
-    private final ChessGame game = new ChessGame();
+    private ChessGame game = new ChessGame();
 
     @PostMapping("/move")
     public ResponseEntity<MoveResponse> move(@RequestBody MoveRequest moveRequest) {
@@ -36,6 +36,12 @@ public class ChessController {
         state.put("blackTime", game.getBlackTimeMillis());
         state.put("history", game.getMoveHistory());
         return state;
+    }
+
+    @PostMapping("/reset") // ✅ fixed endpoint
+    public ResponseEntity<String> resetGame() {
+        game = new ChessGame(); // ✅ creates a new game instance
+        return ResponseEntity.ok("Game reset");
     }
 
     @GetMapping("/valid-moves")

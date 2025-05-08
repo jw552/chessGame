@@ -195,6 +195,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 moveHistory.appendChild(entry);
             });
 
+            document.getElementById('reset-button').addEventListener('click', () => {
+                fetch('/api/chess/reset', { method: 'POST' })
+                    .then(res => res.text())
+                    .then(() => {
+                        location.reload(); // simplest way to reload entire UI from new state
+                    })
+                    .catch(err => alert("Failed to reset game."));
+            });
+
             drawBoard();
         });
 });
