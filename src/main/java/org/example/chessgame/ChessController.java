@@ -1,9 +1,10 @@
-package org.example.chessgame.controller;
+package org.example.chessgame;
 
 import org.example.chessgame.model.ChessGame;
 import org.example.chessgame.model.MoveRequest;
 import org.example.chessgame.model.MoveResponse;
 import org.example.chessgame.model.Position;
+import org.example.chessgame.model.GameStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,4 +49,9 @@ public class ChessController {
     public List<Position> getValidMoves(@RequestParam int row, @RequestParam int col) {
         return game.getValidMoves(new Position(row, col));
     }
+
+/*    @GetMapping("/status")
+    public GameStatus getStatus() {
+        return game.getStatus();
+    } */
 }

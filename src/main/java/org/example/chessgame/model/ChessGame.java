@@ -30,31 +30,37 @@ public class ChessGame {
 
     public boolean movePiece(Position from, Position to) {
         String piece = board[from.getRow()][from.getCol()];
-        String target = board[to.getRow()][to.getCol()];
+        if (piece == null || piece.isEmpty()) return false;
 
-        if (!MoveValidator.isLegalMove(board, piece, from, to)) {
+        boolean isWhitePiece = Character.isUpperCase(piece.charAt(0));
+        if ((whiteTurn && !isWhitePiece) || (!whiteTurn && isWhitePiece)) {
             return false;
         }
 
-        if (piece == null || piece.isEmpty()) return false;
-
-        if (whiteTurn && !Character.isUpperCase(piece.charAt(0))) return false;
-        if (!whiteTurn && !Character.isLowerCase(piece.charAt(0))) return false;
-
+        // Prevent capturing your own piece
+        String target = board[to.getRow()][to.getCol()];
         if (target != null && !target.isEmpty()) {
-            if (Character.isUpperCase(piece.charAt(0)) == Character.isUpperCase(target.charAt(0))) {
+            boolean isWhiteTarget = Character.isUpperCase(target.charAt(0));
+            if (isWhitePiece == isWhiteTarget) {
                 return false;
             }
         }
 
-        // Deduct time
-        long now = System.currentTimeMillis();
-        long elapsed = now - lastMoveTime;
-        if (whiteTurn) whiteTimeMillis -= elapsed;
-        else blackTimeMillis -= elapsed;
+        boolean legal = MoveValidator.isLegalMove(board, piece, from, to);
+        if (!legal) return false;
 
         board[to.getRow()][to.getCol()] = piece;
         board[from.getRow()][from.getCol()] = "";
+
+        long now = System.currentTimeMillis();
+        if (whiteTurn) {
+            whiteTimeMillis -= (now - lastMoveTime);
+        } else {
+            blackTimeMillis -= (now - lastMoveTime);
+        }
+
+        lastMoveTime = now;
+        whiteTurn = !whiteTurn;
 
         moveHistory.add(String.format("%s %s%d → %s%d",
                 piece,
@@ -62,9 +68,11 @@ public class ChessGame {
                 (char) ('a' + to.getCol()), 8 - to.getRow()
         ));
 
-        lastMoveTime = now;
-        whiteTurn = !whiteTurn;
         return true;
+    }
+
+    public List<String> getMoveHistory() {
+        return moveHistory;
     }
 
     public String[][] getBoard() {
@@ -81,10 +89,6 @@ public class ChessGame {
 
     public int getBlackTimeMillis() {
         return blackTimeMillis;
-    }
-
-    public List<String> getMoveHistory() {
-        return moveHistory;
     }
 
     public List<Position> getValidMoves(Position from) {
@@ -108,5 +112,85 @@ public class ChessGame {
             }
         }
         return moves;
+    }
+
+    // -----------------------------
+    // ✅ Added Check/Checkmate Logic
+    // -----------------------------
+
+    public GameStatus getStatus() {
+        boolean inCheck = isKingInCheck(getCurrentTurn());
+        boolean hasMoves = hasAnyLegalMoves(getCurrentTurn());
+        boolean isCheckmate = inCheck && !hasMoves;
+        String winner = isCheckmate ? (getCurrentTurn().equals("White") ? "Black" : "White") : null;
+
+        return new GameStatus(inCheck, isCheckmate, winner);
+    }
+
+    private String getCurrentTurn() {
+        return whiteTurn ? "White" : "Black";
+    }
+
+    private boolean isKingInCheck(String color) {
+        Position kingPos = findKing(color);
+        return isSquareAttacked(kingPos, color.equals("White") ? "Black" : "White");
+    }
+
+    private Position findKing(String color) {
+        String kingSymbol = color.equals("White") ? "K" : "k";
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                if (kingSymbol.equals(board[r][c])) {
+                    return new Position(r, c);
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isSquareAttacked(Position pos, String byColor) {
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                String attacker = board[r][c];
+                if (attacker == null || attacker.isEmpty()) continue;
+
+                boolean isWhite = Character.isUpperCase(attacker.charAt(0));
+                if ((byColor.equals("White") && isWhite) || (byColor.equals("Black") && !isWhite)) {
+                    Position from = new Position(r, c);
+                    if (MoveValidator.isLegalMove(board, attacker, from, pos)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasAnyLegalMoves(String color) {
+        for (int r1 = 0; r1 < 8; r1++) {
+            for (int c1 = 0; c1 < 8; c1++) {
+                String piece = board[r1][c1];
+                if (piece == null || piece.isEmpty()) continue;
+
+                boolean isWhite = Character.isUpperCase(piece.charAt(0));
+                if ((color.equals("White") && !isWhite) || (color.equals("Black") && isWhite)) continue;
+
+                Position from = new Position(r1, c1);
+                List<Position> moves = getValidMoves(from);
+                for (Position to : moves) {
+                    String temp = board[to.getRow()][to.getCol()];
+                    board[to.getRow()][to.getCol()] = piece;
+                    board[r1][c1] = "";
+
+                    boolean kingSafe = !isKingInCheck(color);
+
+                    board[r1][c1] = piece;
+                    board[to.getRow()][to.getCol()] = temp;
+
+                    if (kingSafe) return true;
+                }
+            }
+        }
+        return false;
     }
 }

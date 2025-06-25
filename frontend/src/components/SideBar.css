@@ -1,0 +1,76 @@
+.sidebar {
+    background-color: #1e1e1e;
+    padding: 1rem;
+    width: 250px;
+    color: white;
+    border-left: 2px solid #444;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-self: flex-start;
+    height: 800px; /* MATCHES board */
+    border-radius: 8px;
+}
+
+.sidebar-section {
+    border: 1px solid #555;
+    padding: 0.75rem;
+    border-radius: 5px;
+    background-color: #2a2a2a;
+}
+
+.turn {
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.timers {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.timer-box {
+    flex: 1;
+    text-align: center;
+    padding: 1rem 0.25rem;
+    border: 1px solid #666;
+    background-color: #333;
+    border-radius: 4px;
+    font-weight: bold;
+    line-height: 1.5;
+    font-size: 1.2rem;
+}
+
+
+
+.move-history h4 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: #ccc;
+}
+
+.history {
+    list-style-type: decimal;
+    padding-left: 1.2rem;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.95rem;
+}
+
+.reset-button {
+    padding: 0.5rem 1rem;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+    margin-top: auto;
+}
+
+.reset-button:hover {
+    background-color: #c9302c;
+}
