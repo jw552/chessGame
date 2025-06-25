@@ -43,7 +43,7 @@ body {
 
 .white-piece,
 .black-piece {
-  font-size: 3.5rem; /* try 2.6–3.0 depending on box size */
+  font-size: 3.5rem;
   line-height: 1;
   font-family: "Noto Sans Symbols", "DejaVu Sans", "Segoe UI Symbol", sans-serif;
 }
@@ -62,11 +62,6 @@ body {
 .turn-indicator {
   margin-bottom: 1rem;
   font-weight: bold;
-}
-
-.selected {
-  outline: 3px solid yellow;
-  box-sizing: border-box;
 }
 
 .app-container {

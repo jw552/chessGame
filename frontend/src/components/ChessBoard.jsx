@@ -24,10 +24,10 @@ function ChessBoard({ board, turn, selected, onSquareClick }) {
         try {
             const res = await fetch(`/api/chess/valid-moves?row=${row}&col=${col}`);
             const data = await res.json();
-            console.log('Valid moves response:', data); // optional debug log
+            console.log('Valid moves response:', data);
 
             if (Array.isArray(data)) {
-                setValidMoves(data); // assumes format: [{ row: 3, col: 4 }, ...]
+                setValidMoves(data);
             } else {
                 setValidMoves([]);
             }

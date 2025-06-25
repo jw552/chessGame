@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { pieceToUnicode } from '../utils/pieceToUnicode'; // adjust path as needed
-import { formatMoveHistory } from '../utils/formatMoveHistory'; // adjust path as needed
+import { pieceToUnicode } from '../utils/pieceToUnicode';
+import { formatMoveHistory } from '../utils/formatMoveHistory';
 
 function useChessGame() {
     const [board, setBoard] = useState([]);

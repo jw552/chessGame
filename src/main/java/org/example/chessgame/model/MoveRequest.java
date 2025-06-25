@@ -5,7 +5,7 @@ public class MoveRequest {
     private Position to;
 
     public MoveRequest() {
-        // Default constructor needed for JSON deserialization
+
     }
 
     public Position getFrom() {

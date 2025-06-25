@@ -47,11 +47,10 @@ function App() {
                 whiteRef.current = data.whiteTime;
                 blackRef.current = data.blackTime;
 
-                // ✅ Set formatted history here
                 const formattedHistory = formatMoveHistory(data.history || []);
                 setHistory(formattedHistory);
 
-                fetchStatus(); // grab check/checkmate status
+                fetchStatus();
             })
             .catch(() => setError('Failed to load game.'));
     }, []);

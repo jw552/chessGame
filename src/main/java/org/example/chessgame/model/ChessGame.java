@@ -37,20 +37,28 @@ public class ChessGame {
             return false;
         }
 
-        // Prevent capturing your own piece
         String target = board[to.getRow()][to.getCol()];
         if (target != null && !target.isEmpty()) {
-            boolean isWhiteTarget = Character.isUpperCase(target.charAt(0));
-            if (isWhitePiece == isWhiteTarget) {
+            if (Character.isUpperCase(piece.charAt(0)) == Character.isUpperCase(target.charAt(0))) {
                 return false;
             }
         }
 
-        boolean legal = MoveValidator.isLegalMove(board, piece, from, to);
-        if (!legal) return false;
+        if (!MoveValidator.isLegalMove(board, piece, from, to)) {
+            return false;
+        }
 
+        String originalFrom = board[from.getRow()][from.getCol()];
+        String originalTo = board[to.getRow()][to.getCol()];
         board[to.getRow()][to.getCol()] = piece;
         board[from.getRow()][from.getCol()] = "";
+
+        boolean stillInCheck = MoveValidator.isInCheck(board, whiteTurn);
+        if (stillInCheck) {
+            board[from.getRow()][from.getCol()] = originalFrom;
+            board[to.getRow()][to.getCol()] = originalTo;
+            return false;
+        }
 
         long now = System.currentTimeMillis();
         if (whiteTurn) {
@@ -71,10 +79,6 @@ public class ChessGame {
         return true;
     }
 
-    public List<String> getMoveHistory() {
-        return moveHistory;
-    }
-
     public String[][] getBoard() {
         return board;
     }
@@ -91,6 +95,10 @@ public class ChessGame {
         return blackTimeMillis;
     }
 
+    public List<String> getMoveHistory() {
+        return moveHistory;
+    }
+
     public List<Position> getValidMoves(Position from) {
         List<Position> moves = new ArrayList<>();
         String piece = board[from.getRow()][from.getCol()];
@@ -102,95 +110,56 @@ public class ChessGame {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Position to = new Position(row, col);
-                if (MoveValidator.isLegalMove(board, piece, from, to)) {
-                    String target = board[to.getRow()][to.getCol()];
-                    if (target == null || target.isEmpty() ||
-                            Character.isUpperCase(piece.charAt(0)) != Character.isUpperCase(target.charAt(0))) {
-                        moves.add(to);
-                    }
+                if (!MoveValidator.isLegalMove(board, piece, from, to)) continue;
+
+                String target = board[to.getRow()][to.getCol()];
+                if (target != null && !target.isEmpty() &&
+                        Character.isUpperCase(piece.charAt(0)) == Character.isUpperCase(target.charAt(0))) {
+                    continue;
+                }
+
+                String originalFrom = board[from.getRow()][from.getCol()];
+                String originalTo = board[to.getRow()][to.getCol()];
+                board[to.getRow()][to.getCol()] = piece;
+                board[from.getRow()][from.getCol()] = "";
+
+                boolean stillInCheck = MoveValidator.isInCheck(board, isWhite);
+
+                board[from.getRow()][from.getCol()] = originalFrom;
+                board[to.getRow()][to.getCol()] = originalTo;
+
+                if (!stillInCheck) {
+                    moves.add(to);
                 }
             }
         }
         return moves;
     }
 
-    // -----------------------------
-    // ✅ Added Check/Checkmate Logic
-    // -----------------------------
-
     public GameStatus getStatus() {
-        boolean inCheck = isKingInCheck(getCurrentTurn());
-        boolean hasMoves = hasAnyLegalMoves(getCurrentTurn());
-        boolean isCheckmate = inCheck && !hasMoves;
-        String winner = isCheckmate ? (getCurrentTurn().equals("White") ? "Black" : "White") : null;
+        boolean isWhite = whiteTurn;
+        boolean inCheck = MoveValidator.isInCheck(board, isWhite);
+
+        boolean hasLegalMove = false;
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                String piece = board[row][col];
+                if (piece == null || piece.isEmpty()) continue;
+                if (Character.isUpperCase(piece.charAt(0)) != isWhite) continue;
+
+                Position pos = new Position(row, col);
+                if (!getValidMoves(pos).isEmpty()) {
+                    hasLegalMove = true;
+                    break;
+                }
+            }
+            if (hasLegalMove) break;
+        }
+
+        boolean isCheckmate = inCheck && !hasLegalMove;
+        String winner = isCheckmate ? (isWhite ? "Black" : "White") : null;
 
         return new GameStatus(inCheck, isCheckmate, winner);
     }
 
-    private String getCurrentTurn() {
-        return whiteTurn ? "White" : "Black";
-    }
-
-    private boolean isKingInCheck(String color) {
-        Position kingPos = findKing(color);
-        return isSquareAttacked(kingPos, color.equals("White") ? "Black" : "White");
-    }
-
-    private Position findKing(String color) {
-        String kingSymbol = color.equals("White") ? "K" : "k";
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                if (kingSymbol.equals(board[r][c])) {
-                    return new Position(r, c);
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean isSquareAttacked(Position pos, String byColor) {
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
-                String attacker = board[r][c];
-                if (attacker == null || attacker.isEmpty()) continue;
-
-                boolean isWhite = Character.isUpperCase(attacker.charAt(0));
-                if ((byColor.equals("White") && isWhite) || (byColor.equals("Black") && !isWhite)) {
-                    Position from = new Position(r, c);
-                    if (MoveValidator.isLegalMove(board, attacker, from, pos)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean hasAnyLegalMoves(String color) {
-        for (int r1 = 0; r1 < 8; r1++) {
-            for (int c1 = 0; c1 < 8; c1++) {
-                String piece = board[r1][c1];
-                if (piece == null || piece.isEmpty()) continue;
-
-                boolean isWhite = Character.isUpperCase(piece.charAt(0));
-                if ((color.equals("White") && !isWhite) || (color.equals("Black") && isWhite)) continue;
-
-                Position from = new Position(r1, c1);
-                List<Position> moves = getValidMoves(from);
-                for (Position to : moves) {
-                    String temp = board[to.getRow()][to.getCol()];
-                    board[to.getRow()][to.getCol()] = piece;
-                    board[r1][c1] = "";
-
-                    boolean kingSafe = !isKingInCheck(color);
-
-                    board[r1][c1] = piece;
-                    board[to.getRow()][to.getCol()] = temp;
-
-                    if (kingSafe) return true;
-                }
-            }
-        }
-        return false;
-    }
 }

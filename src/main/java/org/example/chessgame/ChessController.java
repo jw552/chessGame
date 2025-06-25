@@ -39,9 +39,9 @@ public class ChessController {
         return state;
     }
 
-    @PostMapping("/reset") // ✅ fixed endpoint
+    @PostMapping("/reset")
     public ResponseEntity<String> resetGame() {
-        game = new ChessGame(); // ✅ creates a new game instance
+        game = new ChessGame();
         return ResponseEntity.ok("Game reset");
     }
 
@@ -50,8 +50,8 @@ public class ChessController {
         return game.getValidMoves(new Position(row, col));
     }
 
-/*    @GetMapping("/status")
+    @GetMapping("/status")
     public GameStatus getStatus() {
         return game.getStatus();
-    } */
+    }
 }

@@ -5,7 +5,7 @@ public class Position {
     private int col;
 
     public Position() {
-        // Default constructor needed for JSON deserialization
+
     }
 
     public Position(int row, int col) {
