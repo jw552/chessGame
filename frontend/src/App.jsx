@@ -19,6 +19,7 @@ function App() {
         blackCaptures,
         isCheckmate,
         winner,
+        playerIsWhite,
         handleSquareClick,
         setWhiteTime,
         setBlackTime,
@@ -26,7 +27,9 @@ function App() {
         setBoard,
         setError,
         setSelected,
-        fetchStatus
+        fetchStatus,
+        setPlayerIsWhite,
+        setHistory
     } = useChessGame();
 
     const whiteRef = useRef(600000);
@@ -49,6 +52,8 @@ function App() {
 
                 const formattedHistory = formatMoveHistory(data.history || []);
                 setHistory(formattedHistory);
+
+                setPlayerIsWhite(data.playerIsWhite);
 
                 fetchStatus();
             })
@@ -75,11 +80,36 @@ function App() {
     }, [turn, isCheckmate]);
 
     const handleReset = () => {
-        fetch('/api/chess/reset', { method: 'POST' }).then(() => {
-            clearInterval(timerRef.current);
-            setSelected(null);
-            window.location.reload();
-        });
+        fetch('/api/chess/reset', { method: 'POST' })
+            .then(() => {
+                clearInterval(timerRef.current);
+                setSelected(null);
+                setWhiteTime(600000);
+                setBlackTime(600000);
+
+                return fetch('/api/chess/state');
+            })
+            .then(res => res.json())
+            .then(data => {
+                const unicodeBoard = data.board.map(row =>
+                    row.map(piece => pieceToUnicode(piece))
+                );
+                setBoard(unicodeBoard);
+                setTurn(data.whiteTurn ? 'White' : 'Black');
+                setWhiteTime(data.whiteTime);
+                setBlackTime(data.blackTime);
+                whiteRef.current = data.whiteTime;
+                blackRef.current = data.blackTime;
+
+                const formattedHistory = formatMoveHistory(data.history || []);
+                setHistory(formattedHistory);
+                setPlayerIsWhite(data.playerIsWhite);
+                fetchStatus();
+            })
+            .catch((err) => {
+                console.error("Reset failed.", err);
+                setError('Reset failed.');
+            });
     };
 
     return (
@@ -96,6 +126,7 @@ function App() {
                     turn={turn}
                     onSquareClick={handleSquareClick}
                     isFrozen={isCheckmate}
+                    playerIsWhite={playerIsWhite}
                 />
                 <div className="capture-zone captured-pieces">
                     {whiteCaptures.map((p, i) => (

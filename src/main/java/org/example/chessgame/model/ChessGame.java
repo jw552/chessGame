@@ -4,6 +4,8 @@ import org.example.chessgame.rules.MoveValidator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class ChessGame {
 
@@ -12,9 +14,29 @@ public class ChessGame {
     private int whiteTimeMillis = 600000;
     private int blackTimeMillis = 600000;
     private long lastMoveTime = System.currentTimeMillis();
-    private final List<String> moveHistory = new ArrayList<>();
+    private List<String> moveHistory;
+    private Deque<MoveRecord> history;
+    private boolean vsAI;
+    private boolean playerIsWhite;
 
     public ChessGame() {
+        this.board = new String[8][8];
+        setupBoard();
+
+        this.moveHistory = new ArrayList<>();
+        this.history = new ArrayDeque<>();
+        this.whiteTurn = true;
+        this.whiteTimeMillis = 10 * 60 * 1000;
+        this.blackTimeMillis = 10 * 60 * 1000;
+        this.lastMoveTime = System.currentTimeMillis();
+        this.vsAI = true;
+        this.playerIsWhite = true;
+
+        System.out.println("NEW ChessGame initialized.");
+        System.out.println("CONSTRUCTOR: moveHistory.size() = " + moveHistory.size());
+    }
+
+    private void setupBoard() {
         board = new String[][]{
                 {"r", "n", "b", "q", "k", "b", "n", "r"},
                 {"p", "p", "p", "p", "p", "p", "p", "p"},
@@ -25,7 +47,6 @@ public class ChessGame {
                 {"P", "P", "P", "P", "P", "P", "P", "P"},
                 {"R", "N", "B", "Q", "K", "B", "N", "R"}
         };
-        whiteTurn = true;
     }
 
     public boolean movePiece(Position from, Position to) {
@@ -60,6 +81,8 @@ public class ChessGame {
             return false;
         }
 
+        history.add(new MoveRecord(from, to, originalTo));
+
         long now = System.currentTimeMillis();
         if (whiteTurn) {
             whiteTimeMillis -= (now - lastMoveTime);
@@ -77,6 +100,22 @@ public class ChessGame {
         ));
 
         return true;
+    }
+
+    public void setVsAI(boolean vsAI) {
+        this.vsAI = vsAI;
+    }
+
+    public boolean isVsAI() {
+        return vsAI;
+    }
+
+    public void setPlayerIsWhite(boolean isWhite) {
+        this.playerIsWhite = isWhite;
+    }
+
+    public boolean isPlayerIsWhite() {
+        return playerIsWhite;
     }
 
     public String[][] getBoard() {
@@ -162,4 +201,55 @@ public class ChessGame {
         return new GameStatus(inCheck, isCheckmate, winner);
     }
 
+    public boolean isGameOver() {
+        return MoveValidator.isCheckmate(board, whiteTurn) || MoveValidator.isStalemate(board, whiteTurn);
+    }
+
+    public List<MoveAI> getAllLegalMoves() {
+        List<MoveAI> moves = new ArrayList<>();
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                Position from = new Position(row, col);
+                String piece = board[row][col];
+                if (piece == null || piece.isEmpty()) continue;
+
+                boolean isWhitePiece = Character.isUpperCase(piece.charAt(0));
+                if ((whiteTurn && !isWhitePiece) || (!whiteTurn && isWhitePiece)) continue;
+
+                List<Position> destinations = MoveValidator.getLegalDestinations(board, from, whiteTurn);
+                for (Position to : destinations) {
+                    moves.add(new MoveAI(from, to));
+                }
+            }
+        }
+        return moves;
+    }
+
+    public boolean makeMove(MoveAI move) {
+        return movePiece(move.from(), move.to());
+    }
+
+    public MoveResponse makeMove(MoveRequest move) {
+        if ((isWhiteTurn() && !playerIsWhite) || (!isWhiteTurn() && playerIsWhite)) {
+            return new MoveResponse(false, null);
+        }
+
+        boolean success = movePiece(move.getFrom(), move.getTo());
+        return new MoveResponse(success, success ? move : null);
+    }
+
+
+    public void undoMove() {
+        if (history.isEmpty()) {
+            throw new IllegalStateException("No moves to undo.");
+        }
+
+        MoveRecord last = history.removeLast();
+        String movedPiece = board[last.to().getRow()][last.to().getCol()];
+
+        board[last.from().getRow()][last.from().getCol()] = movedPiece;
+        board[last.to().getRow()][last.to().getCol()] = last.capturedPiece();
+
+        whiteTurn = !whiteTurn;
+    }
 }

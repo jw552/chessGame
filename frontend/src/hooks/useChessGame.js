@@ -14,6 +14,7 @@ function useChessGame() {
     const [blackCaptures, setBlackCaptures] = useState([]);
     const [isCheckmate, setIsCheckmate] = useState(false);
     const [winner, setWinner] = useState(null);
+    const [playerIsWhite, setPlayerIsWhite] = useState(true);
 
     const handleSquareClick = (row, col) => {
         if (isCheckmate) return;
@@ -31,7 +32,13 @@ function useChessGame() {
                 to: { row, col }
             }),
         })
-            .then(res => res.json())
+            .then(async res => {
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text);
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     fetch('/api/chess/state')
@@ -45,6 +52,7 @@ function useChessGame() {
                             setWhiteTime(state.whiteTime);
                             setBlackTime(state.blackTime);
                             setHistory(formatMoveHistory(state.history));
+                            setPlayerIsWhite(state.playerIsWhite);
                             setSelected(null);
                             fetchStatus();
                         });
@@ -52,6 +60,11 @@ function useChessGame() {
                     setError('Illegal move');
                     setSelected(null);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                setError(err.message || 'Move failed');
+                setSelected(null);
             });
     };
 
@@ -76,6 +89,7 @@ function useChessGame() {
         blackCaptures,
         isCheckmate,
         winner,
+        playerIsWhite,
         handleSquareClick,
         setBoard,
         setTurn,
@@ -83,7 +97,9 @@ function useChessGame() {
         setBlackTime,
         setSelected,
         setError,
-        fetchStatus
+        fetchStatus,
+        setPlayerIsWhite,
+        setHistory
     };
 }
 

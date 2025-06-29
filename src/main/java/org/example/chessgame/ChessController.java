@@ -7,10 +7,14 @@ import org.example.chessgame.model.Position;
 import org.example.chessgame.model.GameStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.chessgame.ai.ChessAI;
+import org.example.chessgame.model.MoveAI;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+
 
 @RestController
 @RequestMapping("/api/chess")
@@ -19,19 +23,35 @@ public class ChessController {
     private ChessGame game = new ChessGame();
 
     @PostMapping("/move")
-    public ResponseEntity<MoveResponse> move(@RequestBody MoveRequest moveRequest) {
-        boolean success = game.movePiece(moveRequest.getFrom(), moveRequest.getTo());
-        if (success) {
-            return ResponseEntity.ok(new MoveResponse(true, moveRequest));
-        } else {
-            return ResponseEntity.ok(new MoveResponse(false, null));
+    public ResponseEntity<?> makeMove(@RequestBody MoveRequest move) {
+        if (game.isGameOver()) {
+            return ResponseEntity.badRequest().body("Game already over.");
         }
+
+        if ((game.isWhiteTurn() && !game.isPlayerIsWhite()) ||
+                (!game.isWhiteTurn() && game.isPlayerIsWhite())) {
+            return ResponseEntity.badRequest().body("Not your turn.");
+        }
+
+        MoveResponse response = game.makeMove(move);
+
+        if (!response.isSuccess()) {
+            return ResponseEntity.badRequest().body("Illegal move.");
+        }
+
+        if (!game.isGameOver()) {
+            MoveAI aiMove = ChessAI.findBestMove(game);
+            game.makeMove(aiMove);
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/state")
     public Map<String, Object> getState() {
         Map<String, Object> state = new HashMap<>();
         state.put("board", game.getBoard());
+        state.put("playerIsWhite", game.isPlayerIsWhite());
         state.put("whiteTurn", game.isWhiteTurn());
         state.put("whiteTime", game.getWhiteTimeMillis());
         state.put("blackTime", game.getBlackTimeMillis());
@@ -40,9 +60,21 @@ public class ChessController {
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<String> resetGame() {
+    public ResponseEntity<ChessGame> resetGame() {
         game = new ChessGame();
-        return ResponseEntity.ok("Game reset");
+        game.setVsAI(true);
+
+        boolean playerIsWhite = Math.random() < 0.5;
+        game.setPlayerIsWhite(playerIsWhite);
+
+        if (!playerIsWhite) {
+            MoveAI aiMove = ChessAI.findBestMove(game);
+            game.makeMove(aiMove);
+        }
+
+        System.out.println("CONTROLLER: AFTER NEW GAME: moveHistory = " + game.getMoveHistory().size());
+
+        return ResponseEntity.ok(game);
     }
 
     @GetMapping("/valid-moves")
