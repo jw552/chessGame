@@ -51,7 +51,11 @@ function useChessGame() {
                             setTurn(state.whiteTurn ? 'White' : 'Black');
                             setWhiteTime(state.whiteTime);
                             setBlackTime(state.blackTime);
-                            setHistory(formatMoveHistory(state.history));
+                            if (Array.isArray(state.history) && state.history.length > 0) {
+                                setHistory(formatMoveHistory(state.history));
+                            } else {
+                                setHistory([]);
+                            }
                             setPlayerIsWhite(state.playerIsWhite);
                             setSelected(null);
                             fetchStatus();

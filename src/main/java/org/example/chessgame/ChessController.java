@@ -60,7 +60,10 @@ public class ChessController {
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<ChessGame> resetGame() {
+    public ResponseEntity<Map<String, Object>> resetGame() {
+        game.getMoveHistory().clear();
+        game.clearInternalHistory();
+
         game = new ChessGame();
         game.setVsAI(true);
 
@@ -72,10 +75,20 @@ public class ChessController {
             game.makeMove(aiMove);
         }
 
+        System.out.println("CONTROLLER: game reference = " + game);
         System.out.println("CONTROLLER: AFTER NEW GAME: moveHistory = " + game.getMoveHistory().size());
 
-        return ResponseEntity.ok(game);
+        Map<String, Object> state = new HashMap<>();
+        state.put("board", game.getBoard());
+        state.put("playerIsWhite", game.isPlayerIsWhite());
+        state.put("whiteTurn", game.isWhiteTurn());
+        state.put("whiteTime", game.getWhiteTimeMillis());
+        state.put("blackTime", game.getBlackTimeMillis());
+        state.put("history", game.getMoveHistory());
+
+        return ResponseEntity.ok(state);
     }
+
 
     @GetMapping("/valid-moves")
     public List<Position> getValidMoves(@RequestParam int row, @RequestParam int col) {

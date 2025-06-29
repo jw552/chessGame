@@ -86,6 +86,7 @@ function App() {
                 setSelected(null);
                 setWhiteTime(600000);
                 setBlackTime(600000);
+                setHistory([]);
 
                 return fetch('/api/chess/state');
             })

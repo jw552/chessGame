@@ -2,6 +2,7 @@ package org.example.chessgame.ai;
 
 import org.example.chessgame.model.ChessGame;
 import org.example.chessgame.model.MoveAI;
+
 import java.util.List;
 
 public class ChessAI {
@@ -22,11 +23,13 @@ public class ChessAI {
         if (maximizingPlayer) {
             int maxEval = Integer.MIN_VALUE;
             for (MoveAI move : legalMoves) {
-                boolean moved = game.makeMove(move);
+                ChessGame clonedGame = new ChessGame();
+                clonedGame.copyFrom(game);
+                boolean moved = clonedGame.makeMove(move);
+
                 if (!moved) continue;
 
-                int eval = minimax(game, depth - 1, alpha, beta, false).score();
-                game.undoMove();
+                int eval = minimax(clonedGame, depth - 1, alpha, beta, false).score();
                 if (eval > maxEval) {
                     maxEval = eval;
                     bestMove = move;
@@ -37,24 +40,27 @@ public class ChessAI {
                 if (beta <= alpha) break;
             }
             return new MoveScore(bestMove, maxEval);
-        } else {
-            int minEval = Integer.MAX_VALUE;
-            for (MoveAI move : legalMoves) {
-                boolean moved = game.makeMove(move);
-                if (!moved) continue;
-
-                int eval = minimax(game, depth - 1, alpha, beta, true).score();
-                game.undoMove();
-                if (eval < minEval) {
-                    minEval = eval;
-                    bestMove = move;
-                } else if (eval == minEval && Math.random() < 0.5) {
-                    bestMove = move;
-                }
-                beta = Math.min(beta, eval);
-                if (beta <= alpha) break;
-            }
-            return new MoveScore(bestMove, minEval);
         }
+
+        int minEval = Integer.MAX_VALUE;
+        for (MoveAI move : legalMoves) {
+            ChessGame clonedGame = new ChessGame();
+            clonedGame.copyFrom(game);
+            boolean moved = clonedGame.makeMove(move);
+
+            if (!moved) continue;
+
+            int eval = minimax(clonedGame, depth - 1, alpha, beta, true).score();
+            if (eval < minEval) {
+                minEval = eval;
+                bestMove = move;
+            } else if (eval == minEval && Math.random() < 0.5) {
+                bestMove = move;
+            }
+            beta = Math.min(beta, eval);
+            if (beta <= alpha) break;
+        }
+        return new MoveScore(bestMove, minEval);
+
     }
 }

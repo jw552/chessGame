@@ -10,6 +10,13 @@ import java.util.Deque;
 public class ChessGame {
 
     private String[][] board;
+    private String[][] deepCopyBoard(String[][] original) {
+        String[][] copy = new String[8][8];
+        for (int i = 0; i < 8; i++) {
+            System.arraycopy(original[i], 0, copy[i], 0, 8);
+        }
+        return copy;
+    }
     private boolean whiteTurn;
     private int whiteTimeMillis = 600000;
     private int blackTimeMillis = 600000;
@@ -33,7 +40,19 @@ public class ChessGame {
         this.playerIsWhite = true;
 
         System.out.println("NEW ChessGame initialized.");
+        System.out.println("CONSTRUCTOR: this = " + this);
         System.out.println("CONSTRUCTOR: moveHistory.size() = " + moveHistory.size());
+    }
+
+    public void copyFrom(ChessGame other) {
+        this.board = deepCopyBoard(other.board);
+        this.whiteTurn = other.whiteTurn;
+        this.whiteTimeMillis = other.whiteTimeMillis;
+        this.blackTimeMillis = other.blackTimeMillis;
+        this.vsAI = other.vsAI;
+        this.playerIsWhite = other.playerIsWhite;
+        this.moveHistory = new ArrayList<>(other.moveHistory);
+        this.history = new ArrayDeque<>(other.history);
     }
 
     private void setupBoard() {
@@ -135,6 +154,7 @@ public class ChessGame {
     }
 
     public List<String> getMoveHistory() {
+        System.out.println("⚠️ getMoveHistory called. Current size: " + moveHistory.size());
         return moveHistory;
     }
 
@@ -238,6 +258,9 @@ public class ChessGame {
         return new MoveResponse(success, success ? move : null);
     }
 
+    public void clearInternalHistory() {
+        if (history != null) history.clear();
+    }
 
     public void undoMove() {
         if (history.isEmpty()) {
