@@ -29,7 +29,10 @@ function App() {
         setSelected,
         fetchStatus,
         setPlayerIsWhite,
-        setHistory
+        setHistory,
+        setRawBoard,
+        setWhiteCaptures,
+        setBlackCaptures
     } = useChessGame();
 
     const whiteRef = useRef(600000);
@@ -40,6 +43,7 @@ function App() {
         fetch('/api/chess/state')
             .then(res => res.json())
             .then(data => {
+                setRawBoard(data.board);
                 const unicodeBoard = data.board.map(row =>
                     row.map(piece => pieceToUnicode(piece))
                 );
@@ -54,6 +58,8 @@ function App() {
                 setHistory(formattedHistory);
 
                 setPlayerIsWhite(data.playerIsWhite);
+                setWhiteCaptures(data.whiteCaptures || []);
+                setBlackCaptures(data.blackCaptures || []);
 
                 fetchStatus();
             })
@@ -92,10 +98,13 @@ function App() {
             })
             .then(res => res.json())
             .then(data => {
+                setRawBoard(data.board);
                 const unicodeBoard = data.board.map(row =>
                     row.map(piece => pieceToUnicode(piece))
                 );
                 setBoard(unicodeBoard);
+                setWhiteCaptures(data.whiteCaptures || []);
+                setBlackCaptures(data.blackCaptures || []);
                 setTurn(data.whiteTurn ? 'White' : 'Black');
                 setWhiteTime(data.whiteTime);
                 setBlackTime(data.blackTime);
@@ -118,7 +127,7 @@ function App() {
             <div className="board-and-captures">
                 <div className="capture-zone captured-pieces">
                     {blackCaptures.map((p, i) => (
-                        <span key={i} className="black-piece">{p}</span>
+                        <span key={i} className="black-piece">{pieceToUnicode(p)}</span>
                     ))}
                 </div>
                 <ChessBoard
@@ -131,7 +140,7 @@ function App() {
                 />
                 <div className="capture-zone captured-pieces">
                     {whiteCaptures.map((p, i) => (
-                        <span key={i} className="white-piece">{p}</span>
+                        <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
                     ))}
                 </div>
             </div>

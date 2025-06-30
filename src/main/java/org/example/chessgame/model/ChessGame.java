@@ -25,6 +25,8 @@ public class ChessGame {
     private Deque<MoveRecord> history;
     private boolean vsAI;
     private boolean playerIsWhite;
+    private final List<Character> whiteCaptures = new ArrayList<>();
+    private final List<Character> blackCaptures = new ArrayList<>();
 
     public ChessGame() {
         this.board = new String[8][8];
@@ -90,6 +92,14 @@ public class ChessGame {
 
         String originalFrom = board[from.getRow()][from.getCol()];
         String originalTo = board[to.getRow()][to.getCol()];
+        if (target != null && !target.isEmpty()) {
+            char captured = target.charAt(0);
+            if (whiteTurn) {
+                whiteCaptures.add(captured);
+            } else {
+                blackCaptures.add(captured);
+            }
+        }
         board[to.getRow()][to.getCol()] = piece;
         board[from.getRow()][from.getCol()] = "";
 
@@ -152,6 +162,16 @@ public class ChessGame {
     public int getBlackTimeMillis() {
         return blackTimeMillis;
     }
+
+    public List<Character> getWhiteCaptures() {
+        return whiteCaptures;
+    }
+
+    public List<Character> getBlackCaptures() {
+        return blackCaptures;
+    }
+
+
 
     public List<String> getMoveHistory() {
         System.out.println("⚠️ getMoveHistory called. Current size: " + moveHistory.size());

@@ -15,11 +15,32 @@ function useChessGame() {
     const [isCheckmate, setIsCheckmate] = useState(false);
     const [winner, setWinner] = useState(null);
     const [playerIsWhite, setPlayerIsWhite] = useState(true);
+    const [rawBoard, setRawBoard] = useState([]);
+
+
 
     const handleSquareClick = (row, col) => {
         if (isCheckmate) return;
 
+        const clicked = rawBoard[row]?.[col];
+
+        const isOwnPiece = clicked &&
+            ((playerIsWhite && clicked === clicked.toUpperCase()) ||
+                (!playerIsWhite && clicked === clicked.toLowerCase()));
+
         if (!selected) {
+            if (isOwnPiece) {
+                setSelected({ row, col });
+            }
+            return;
+        }
+
+        if (selected.row === row && selected.col === col) {
+            setSelected(null);
+            return;
+        }
+
+        if (isOwnPiece) {
             setSelected({ row, col });
             return;
         }
@@ -44,30 +65,29 @@ function useChessGame() {
                     fetch('/api/chess/state')
                         .then(res => res.json())
                         .then(state => {
+                            setRawBoard(state.board);
                             const unicodeBoard = state.board.map(row =>
                                 row.map(piece => pieceToUnicode(piece))
                             );
                             setBoard(unicodeBoard);
+                            setWhiteCaptures(state.whiteCaptures || []);
+                            setBlackCaptures(state.blackCaptures || []);
                             setTurn(state.whiteTurn ? 'White' : 'Black');
                             setWhiteTime(state.whiteTime);
                             setBlackTime(state.blackTime);
-                            if (Array.isArray(state.history) && state.history.length > 0) {
-                                setHistory(formatMoveHistory(state.history));
-                            } else {
-                                setHistory([]);
-                            }
+                            setHistory(Array.isArray(state.history)
+                                ? formatMoveHistory(state.history)
+                                : []);
                             setPlayerIsWhite(state.playerIsWhite);
                             setSelected(null);
                             fetchStatus();
                         });
                 } else {
-                    setError('Illegal move');
                     setSelected(null);
                 }
             })
             .catch(err => {
                 console.error(err);
-                setError(err.message || 'Move failed');
                 setSelected(null);
             });
     };
@@ -103,7 +123,10 @@ function useChessGame() {
         setError,
         fetchStatus,
         setPlayerIsWhite,
-        setHistory
+        setHistory,
+        setRawBoard,
+        setWhiteCaptures,
+        setBlackCaptures
     };
 }
 

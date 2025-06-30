@@ -56,6 +56,8 @@ public class ChessController {
         state.put("whiteTime", game.getWhiteTimeMillis());
         state.put("blackTime", game.getBlackTimeMillis());
         state.put("history", game.getMoveHistory());
+        state.put("whiteCaptures", game.getWhiteCaptures());
+        state.put("blackCaptures", game.getBlackCaptures());
         return state;
     }
 
