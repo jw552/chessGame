@@ -62,7 +62,7 @@ function useChessGame() {
             })
             .then(data => {
                 if (data.success) {
-                    fetch('/api/chess/state')
+                    return fetch('/api/chess/state')
                         .then(res => res.json())
                         .then(state => {
                             setRawBoard(state.board);
@@ -81,6 +81,35 @@ function useChessGame() {
                             setPlayerIsWhite(state.playerIsWhite);
                             setSelected(null);
                             fetchStatus();
+
+                            const isAITurn = (state.whiteTurn && !state.playerIsWhite) ||
+                                (!state.whiteTurn && state.playerIsWhite);
+
+                            if (isAITurn) {
+                                setTimeout(() => {
+                                    fetch('/api/chess/ai-move', { method: 'POST' })
+                                        .then(() => fetch('/api/chess/state'))
+                                        .then(res => res.json())
+                                        .then(aiState => {
+                                            setRawBoard(aiState.board);
+                                            const unicode = aiState.board.map(row =>
+                                                row.map(piece => pieceToUnicode(piece))
+                                            );
+                                            setBoard(unicode);
+                                            setWhiteCaptures(aiState.whiteCaptures || []);
+                                            setBlackCaptures(aiState.blackCaptures || []);
+                                            setTurn(aiState.whiteTurn ? 'White' : 'Black');
+                                            setWhiteTime(aiState.whiteTime);
+                                            setBlackTime(aiState.blackTime);
+                                            setHistory(Array.isArray(aiState.history)
+                                                ? formatMoveHistory(aiState.history)
+                                                : []);
+                                            setPlayerIsWhite(aiState.playerIsWhite);
+                                            setSelected(null);
+                                            fetchStatus();
+                                        });
+                                }, 200);
+                            }
                         });
                 } else {
                     setSelected(null);
@@ -91,6 +120,7 @@ function useChessGame() {
                 setSelected(null);
             });
     };
+
 
     const fetchStatus = () => {
         fetch('/api/chess/status')

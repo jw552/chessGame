@@ -13,6 +13,7 @@ import org.example.chessgame.model.MoveAI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.http.HttpStatus;
 
 
 
@@ -39,12 +40,24 @@ public class ChessController {
             return ResponseEntity.badRequest().body("Illegal move.");
         }
 
-        if (!game.isGameOver()) {
-            MoveAI aiMove = ChessAI.findBestMove(game);
-            game.makeMove(aiMove);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/ai-move")
+    public ResponseEntity<?> makeAIMove() {
+        if (game.isGameOver()) {
+            return ResponseEntity.ok(Map.of("success", false, "message", "Game is over"));
         }
 
-        return ResponseEntity.ok(response);
+        MoveAI aiMove = ChessAI.findBestMove(game);
+        boolean moved = game.makeMove(aiMove);
+
+        if (moved) {
+            return ResponseEntity.ok(Map.of("success", true));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("AI move failed.");
+        }
     }
 
     @GetMapping("/state")

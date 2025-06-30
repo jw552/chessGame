@@ -103,8 +103,6 @@ function App() {
                     row.map(piece => pieceToUnicode(piece))
                 );
                 setBoard(unicodeBoard);
-                setWhiteCaptures(data.whiteCaptures || []);
-                setBlackCaptures(data.blackCaptures || []);
                 setTurn(data.whiteTurn ? 'White' : 'Black');
                 setWhiteTime(data.whiteTime);
                 setBlackTime(data.blackTime);
@@ -113,36 +111,89 @@ function App() {
 
                 const formattedHistory = formatMoveHistory(data.history || []);
                 setHistory(formattedHistory);
+
                 setPlayerIsWhite(data.playerIsWhite);
+                setWhiteCaptures(data.whiteCaptures || []);
+                setBlackCaptures(data.blackCaptures || []);
                 fetchStatus();
-            })
-            .catch((err) => {
-                console.error("Reset failed.", err);
-                setError('Reset failed.');
+
+                const isAITurn = (data.whiteTurn && !data.playerIsWhite) ||
+                    (!data.whiteTurn && data.playerIsWhite);
+                if (isAITurn) {
+                    setTimeout(() => {
+                        fetch('/api/chess/ai-move', { method: 'POST' })
+                            .then(() => fetch('/api/chess/state'))
+                            .then(res => res.json())
+                            .then(aiState => {
+                                setRawBoard(aiState.board);
+                                const unicode = aiState.board.map(row =>
+                                    row.map(piece => pieceToUnicode(piece))
+                                );
+                                setBoard(unicode);
+                                setWhiteCaptures(aiState.whiteCaptures || []);
+                                setBlackCaptures(aiState.blackCaptures || []);
+                                setTurn(aiState.whiteTurn ? 'White' : 'Black');
+                                setWhiteTime(aiState.whiteTime);
+                                setBlackTime(aiState.blackTime);
+                                setHistory(Array.isArray(aiState.history)
+                                    ? formatMoveHistory(aiState.history)
+                                    : []);
+                                setPlayerIsWhite(aiState.playerIsWhite);
+                                setSelected(null);
+                                fetchStatus();
+                            });
+                    }, 200);
+                }
             });
     };
 
     return (
         <div className="app-container">
             <div className="board-and-captures">
-                <div className="capture-zone captured-pieces">
-                    {blackCaptures.map((p, i) => (
-                        <span key={i} className="black-piece">{pieceToUnicode(p)}</span>
-                    ))}
-                </div>
-                <ChessBoard
-                    board={board}
-                    selected={selected}
-                    turn={turn}
-                    onSquareClick={handleSquareClick}
-                    isFrozen={isCheckmate}
-                    playerIsWhite={playerIsWhite}
-                />
-                <div className="capture-zone captured-pieces">
-                    {whiteCaptures.map((p, i) => (
-                        <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
-                    ))}
-                </div>
+                {playerIsWhite ? (
+                    <>
+                        <div className="capture-zone captured-pieces">
+                            {blackCaptures.map((p, i) => (
+                                <span key={i} className="black-piece">{pieceToUnicode(p)}</span>
+                            ))}
+                        </div>
+                        <ChessBoard
+                            board={board}
+                            selected={selected}
+                            turn={turn}
+                            onSquareClick={handleSquareClick}
+                            isFrozen={isCheckmate}
+                            playerIsWhite={playerIsWhite}
+                        />
+                        <div className="capture-zone captured-pieces">
+                            {whiteCaptures.map((p, i) => (
+                                <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className="capture-zone captured-pieces">
+                            {whiteCaptures.map((p, i) => (
+                                <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
+                            ))}
+                        </div>
+                        <ChessBoard
+                            board={board}
+                            selected={selected}
+                            turn={turn}
+                            onSquareClick={handleSquareClick}
+                            isFrozen={isCheckmate}
+                            playerIsWhite={playerIsWhite}
+                        />
+                        <div className="capture-zone captured-pieces">
+                            {blackCaptures.map((p, i) => (
+                                <span key={i} className="black-piece">{pieceToUnicode(p)}</span>
+                            ))}
+                        </div>
+                    </>
+                )}
+
             </div>
 
             <Sidebar
