@@ -27,6 +27,9 @@ public class ChessGame {
     private boolean playerIsWhite;
     private final List<Character> whiteCaptures = new ArrayList<>();
     private final List<Character> blackCaptures = new ArrayList<>();
+    private boolean promotionPending = false;
+    private int[] promotionSquare = null;
+
 
     public ChessGame() {
         this.board = new String[8][8];
@@ -70,7 +73,7 @@ public class ChessGame {
         };
     }
 
-    public boolean movePiece(Position from, Position to) {
+    public boolean movePiece(Position from, Position to, boolean isAI) {
         String piece = board[from.getRow()][from.getCol()];
         if (piece == null || piece.isEmpty()) return false;
 
@@ -103,6 +106,16 @@ public class ChessGame {
         board[to.getRow()][to.getCol()] = piece;
         board[from.getRow()][from.getCol()] = "";
 
+        if ((piece.equals("P") && to.getRow() == 0) || (piece.equals("p") && to.getRow() == 7)) {
+            if (isAI) {
+                board[to.getRow()][to.getCol()] = piece.equals("P") ? "Q" : "q";
+            } else {
+                promotionPending = true;
+                promotionSquare = new int[]{to.getRow(), to.getCol()};
+                return true;
+            }
+        }
+
         boolean stillInCheck = MoveValidator.isInCheck(board, whiteTurn);
         if (stillInCheck) {
             board[from.getRow()][from.getCol()] = originalFrom;
@@ -120,7 +133,9 @@ public class ChessGame {
         }
 
         lastMoveTime = now;
-        whiteTurn = !whiteTurn;
+        if (!promotionPending) {
+            whiteTurn = !whiteTurn;
+        }
 
         moveHistory.add(String.format("%s %s%d → %s%d",
                 piece,
@@ -171,7 +186,29 @@ public class ChessGame {
         return blackCaptures;
     }
 
+    public boolean isPromotionPending() {
+        return promotionPending;
+    }
 
+    public int[] getPromotionSquare() {
+        return promotionSquare;
+    }
+
+    public void promotePawn(String newPiece) {
+        if (!promotionPending || promotionSquare == null) return;
+
+        int row = promotionSquare[0];
+        int col = promotionSquare[1];
+        String current = board[row][col];
+
+        if (current.equals("P") || current.equals("p")) {
+            String promoted = current.equals("P") ? newPiece.toUpperCase() : newPiece.toLowerCase();
+            board[row][col] = promoted;
+        }
+
+        promotionPending = false;
+        promotionSquare = null;
+    }
 
     public List<String> getMoveHistory() {
         System.out.println("⚠️ getMoveHistory called. Current size: " + moveHistory.size());
@@ -266,7 +303,7 @@ public class ChessGame {
     }
 
     public boolean makeMove(MoveAI move) {
-        return movePiece(move.from(), move.to());
+        return movePiece(move.from(), move.to(), true);
     }
 
     public MoveResponse makeMove(MoveRequest move) {
@@ -274,7 +311,7 @@ public class ChessGame {
             return new MoveResponse(false, null);
         }
 
-        boolean success = movePiece(move.getFrom(), move.getTo());
+        boolean success = movePiece(move.getFrom(), move.getTo(), false);
         return new MoveResponse(success, success ? move : null);
     }
 

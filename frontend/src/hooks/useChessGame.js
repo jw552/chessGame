@@ -16,6 +16,8 @@ function useChessGame() {
     const [winner, setWinner] = useState(null);
     const [playerIsWhite, setPlayerIsWhite] = useState(true);
     const [rawBoard, setRawBoard] = useState([]);
+    const [showPromotion, setShowPromotion] = useState(false);
+    const [promotionSquare, setPromotionSquare] = useState(null);
 
 
 
@@ -61,6 +63,12 @@ function useChessGame() {
                 return res.json();
             })
             .then(data => {
+                if (data.promotion) {
+                    setShowPromotion(true);
+                    setPromotionSquare({ row, col });
+                    return;
+                }
+
                 if (data.success) {
                     return fetch('/api/chess/state')
                         .then(res => res.json())
@@ -156,7 +164,11 @@ function useChessGame() {
         setHistory,
         setRawBoard,
         setWhiteCaptures,
-        setBlackCaptures
+        setBlackCaptures,
+        showPromotion,
+        setShowPromotion,
+        promotionSquare,
+        setPromotionSquare
     };
 }
 

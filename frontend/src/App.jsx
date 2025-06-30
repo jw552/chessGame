@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import useChessGame from './hooks/useChessGame';
 import { pieceToUnicode } from './utils/pieceToUnicode';
 import { formatMoveHistory } from './utils/formatMoveHistory';
+import PromotionModal from './components/PromotionModal';
 import './index.css';
 
 function App() {
@@ -32,7 +33,11 @@ function App() {
         setHistory,
         setRawBoard,
         setWhiteCaptures,
-        setBlackCaptures
+        setBlackCaptures,
+        showPromotion,
+        setShowPromotion,
+        promotionSquare,
+        setPromotionSquare
     } = useChessGame();
 
     const whiteRef = useRef(600000);
@@ -205,6 +210,41 @@ function App() {
                 whiteCaptures={whiteCaptures}
                 blackCaptures={blackCaptures}
             />
+
+            {showPromotion && (
+                <PromotionModal
+                    onSelect={piece => {
+                        fetch('/api/chess/promote', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ piece })
+                        }).then(() => {
+                            setShowPromotion(false);
+                            setPromotionSquare(null);
+
+                            fetch('/api/chess/state')
+                                .then(res => res.json())
+                                .then(data => {
+                                    setRawBoard(data.board);
+                                    const unicode = data.board.map(row =>
+                                        row.map(p => pieceToUnicode(p))
+                                    );
+                                    setBoard(unicode);
+                                    setWhiteCaptures(data.whiteCaptures || []);
+                                    setBlackCaptures(data.blackCaptures || []);
+                                    setTurn(data.whiteTurn ? 'White' : 'Black');
+                                    setWhiteTime(data.whiteTime);
+                                    setBlackTime(data.blackTime);
+                                    setHistory(Array.isArray(data.history)
+                                        ? formatMoveHistory(data.history)
+                                        : []);
+                                    setPlayerIsWhite(data.playerIsWhite);
+                                    fetchStatus();
+                                });
+                        });
+                    }}
+                />
+            )}
 
             {isCheckmate && (
                 <div className="popup">

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import java.util.Set;
 
 
 
@@ -38,6 +39,10 @@ public class ChessController {
 
         if (!response.isSuccess()) {
             return ResponseEntity.badRequest().body("Illegal move.");
+        }
+
+        if (game.isPromotionPending()) {
+            return ResponseEntity.ok(Map.of("promotion", true));
         }
 
         return ResponseEntity.ok(Map.of("success", true));
@@ -114,4 +119,16 @@ public class ChessController {
     public GameStatus getStatus() {
         return game.getStatus();
     }
+
+    @PostMapping("/promote")
+    public ResponseEntity<?> promotePawn(@RequestBody Map<String, String> body) {
+        String piece = body.get("piece");
+        if (!Set.of("Q", "R", "B", "N").contains(piece)) {
+            return ResponseEntity.badRequest().body("Invalid promotion piece.");
+        }
+
+        game.promotePawn(piece);
+        return ResponseEntity.ok().build();
+    }
+
 }
