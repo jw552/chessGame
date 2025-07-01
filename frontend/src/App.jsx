@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import ChessBoard from './components/ChessBoard';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/Sidebar.jsx';
 import useChessGame from './hooks/useChessGame';
 import { pieceToUnicode } from './utils/pieceToUnicode';
 import { formatMoveHistory } from './utils/formatMoveHistory';

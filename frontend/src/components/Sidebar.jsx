@@ -1,5 +1,5 @@
 import React from 'react';
-import './SideBar.css';
+import './Sidebar.css';
 
 function Sidebar({ turn, history, whiteTime, blackTime, onReset }) {
     const formatTime = (ms) => {
