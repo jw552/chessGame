@@ -162,14 +162,16 @@ function App() {
                                 <span key={i} className="black-piece">{pieceToUnicode(p)}</span>
                             ))}
                         </div>
-                        <ChessBoard
-                            board={board}
-                            selected={selected}
-                            turn={turn}
-                            onSquareClick={handleSquareClick}
-                            isFrozen={isCheckmate}
-                            playerIsWhite={playerIsWhite}
-                        />
+                        <div className="board-wrapper">
+                            <ChessBoard
+                                board={board}
+                                selected={selected}
+                                turn={turn}
+                                onSquareClick={handleSquareClick}
+                                isFrozen={isCheckmate}
+                                playerIsWhite={playerIsWhite}
+                            />
+                        </div>
                         <div className="capture-zone captured-pieces">
                             {whiteCaptures.map((p, i) => (
                                 <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
@@ -183,14 +185,16 @@ function App() {
                                 <span key={i} className="white-piece">{pieceToUnicode(p)}</span>
                             ))}
                         </div>
-                        <ChessBoard
-                            board={board}
-                            selected={selected}
-                            turn={turn}
-                            onSquareClick={handleSquareClick}
-                            isFrozen={isCheckmate}
-                            playerIsWhite={playerIsWhite}
-                        />
+                        <div className="board-wrapper">
+                            <ChessBoard
+                                board={board}
+                                selected={selected}
+                                turn={turn}
+                                onSquareClick={handleSquareClick}
+                                isFrozen={isCheckmate}
+                                playerIsWhite={playerIsWhite}
+                            />
+                        </div>
                         <div className="capture-zone captured-pieces">
                             {blackCaptures.map((p, i) => (
                                 <span key={i} className="black-piece">{pieceToUnicode(p)}</span>

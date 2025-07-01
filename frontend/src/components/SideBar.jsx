@@ -25,7 +25,7 @@ function Sidebar({ turn, history, whiteTime, blackTime, onReset }) {
                 <h4>Move History</h4>
                 <ol className="history">
                     {history.map((move, index) => (
-                        <li key={index}>{move}</li>
+                        <li key={index}><span className="history-entry">{move}</span></li>
                     ))}
                 </ol>
             </div>
