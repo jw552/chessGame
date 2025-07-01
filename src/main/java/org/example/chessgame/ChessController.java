@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-
 @RestController
 @RequestMapping("/api/chess")
 public class ChessController {
