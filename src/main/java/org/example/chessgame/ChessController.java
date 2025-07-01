@@ -92,7 +92,7 @@ public class ChessController {
         String sessionId = body.get("sessionId");
         SessionGame session = getOrCreateSession(sessionId);
         ChessGame game = new ChessGame();
-        session = new SessionGame(game); // replace session instance with a fresh one
+        session = new SessionGame(game);
         games.put(sessionId, session);
 
         game.setVsAI(true);
