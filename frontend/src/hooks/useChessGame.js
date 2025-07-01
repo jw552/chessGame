@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { pieceToUnicode } from '../utils/pieceToUnicode';
 import { formatMoveHistory } from '../utils/formatMoveHistory';
 
+const getOrCreateSessionId = () => {
+    let sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+        sessionId = crypto.randomUUID(); // requires secure context (https)
+        localStorage.setItem("sessionId", sessionId);
+    }
+    return sessionId;
+};
+
+const sessionId = getOrCreateSessionId();
+
 function useChessGame() {
     const [board, setBoard] = useState([]);
     const [turn, setTurn] = useState('White');
@@ -51,6 +62,7 @@ function useChessGame() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                sessionId,
                 from: selected,
                 to: { row, col }
             }),
@@ -70,7 +82,11 @@ function useChessGame() {
                 }
 
                 if (data.success) {
-                    return fetch('/api/chess/state')
+                    return fetch('/api/chess/state', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionId })
+                    })
                         .then(res => res.json())
                         .then(state => {
                             setRawBoard(state.board);
@@ -95,8 +111,16 @@ function useChessGame() {
 
                             if (isAITurn) {
                                 setTimeout(() => {
-                                    fetch('/api/chess/ai-move', { method: 'POST' })
-                                        .then(() => fetch('/api/chess/state'))
+                                    fetch('/api/chess/ai-move', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ sessionId })
+                                    })
+                                        .then(() => fetch('/api/chess/state', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ sessionId })
+                                        }))
                                         .then(res => res.json())
                                         .then(aiState => {
                                             setRawBoard(aiState.board);
@@ -131,7 +155,11 @@ function useChessGame() {
 
 
     const fetchStatus = () => {
-        fetch('/api/chess/status')
+        fetch('/api/chess/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        })
             .then(res => res.json())
             .then(data => {
                 setIsCheckmate(data.checkmate);
@@ -168,7 +196,8 @@ function useChessGame() {
         showPromotion,
         setShowPromotion,
         promotionSquare,
-        setPromotionSquare
+        setPromotionSquare,
+        sessionId
     };
 }
 

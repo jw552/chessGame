@@ -7,6 +7,17 @@ import { formatMoveHistory } from './utils/formatMoveHistory';
 import PromotionModal from './components/PromotionModal';
 import './index.css';
 
+const getOrCreateSessionId = () => {
+    let sessionId = localStorage.getItem("sessionId");
+    if (!sessionId) {
+        sessionId = crypto.randomUUID(); // requires secure context (https)
+        localStorage.setItem("sessionId", sessionId);
+    }
+    return sessionId;
+};
+
+const sessionId = getOrCreateSessionId();
+
 function App() {
     const {
         board,
@@ -37,7 +48,8 @@ function App() {
         showPromotion,
         setShowPromotion,
         promotionSquare,
-        setPromotionSquare
+        setPromotionSquare,
+        sessionId
     } = useChessGame();
 
     const whiteRef = useRef(600000);
@@ -45,7 +57,11 @@ function App() {
     const timerRef = useRef(null);
 
     useEffect(() => {
-        fetch('/api/chess/state')
+        fetch('/api/chess/state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        })
             .then(res => res.json())
             .then(data => {
                 setRawBoard(data.board);
@@ -91,7 +107,11 @@ function App() {
     }, [turn, isCheckmate]);
 
     const handleReset = () => {
-        fetch('/api/chess/reset', { method: 'POST' })
+        fetch('/api/chess/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        })
             .then(() => {
                 clearInterval(timerRef.current);
                 setSelected(null);
@@ -99,7 +119,11 @@ function App() {
                 setBlackTime(600000);
                 setHistory([]);
 
-                return fetch('/api/chess/state');
+                return fetch('/api/chess/state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                })
             })
             .then(res => res.json())
             .then(data => {
@@ -126,8 +150,16 @@ function App() {
                     (!data.whiteTurn && data.playerIsWhite);
                 if (isAITurn) {
                     setTimeout(() => {
-                        fetch('/api/chess/ai-move', { method: 'POST' })
-                            .then(() => fetch('/api/chess/state'))
+                        fetch('/api/chess/ai-move', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sessionId })
+                        })
+                            .then(() => fetch('/api/chess/state', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ sessionId })
+                            }))
                             .then(res => res.json())
                             .then(aiState => {
                                 setRawBoard(aiState.board);
@@ -221,12 +253,20 @@ function App() {
                         fetch('/api/chess/promote', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ piece })
-                        }).then(() => {
+                            body: JSON.stringify({
+                                sessionId,
+                                piece
+                            })
+                        }).
+                        then(() => {
                             setShowPromotion(false);
                             setPromotionSquare(null);
 
-                            fetch('/api/chess/state')
+                            fetch('/api/chess/state', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ sessionId })
+                            })
                                 .then(res => res.json())
                                 .then(data => {
                                     setRawBoard(data.board);

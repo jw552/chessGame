@@ -29,7 +29,13 @@ function ChessBoard({ board, turn, selected, onSquareClick, playerIsWhite }) {
 
     const fetchValidMoves = async (row, col) => {
         try {
-            const res = await fetch(`/api/chess/valid-moves?row=${row}&col=${col}`);
+            const sessionId = localStorage.getItem("sessionId"); // safely retrieve
+            const res = await fetch('/api/chess/valid-moves', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId, row, col })
+            });
+
             const data = await res.json();
             if (Array.isArray(data)) {
                 setValidMoves(data);
