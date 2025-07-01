@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore Java crash logs
+hs_err_pid*.log
+hs_err_pid*.jfr

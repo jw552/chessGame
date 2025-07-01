@@ -5,7 +5,7 @@ import { formatMoveHistory } from '../utils/formatMoveHistory';
 const getOrCreateSessionId = () => {
     let sessionId = localStorage.getItem("sessionId");
     if (!sessionId) {
-        sessionId = crypto.randomUUID(); // requires secure context (https)
+        sessionId = crypto.randomUUID();
         localStorage.setItem("sessionId", sessionId);
     }
     return sessionId;
@@ -58,7 +58,7 @@ function useChessGame() {
             return;
         }
 
-        fetch('/api/chess/move', {
+        fetch('${import.meta.env.VITE_API_BASE}/api/chess/move', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -82,7 +82,7 @@ function useChessGame() {
                 }
 
                 if (data.success) {
-                    return fetch('/api/chess/state', {
+                    return fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ sessionId })
@@ -111,12 +111,12 @@ function useChessGame() {
 
                             if (isAITurn) {
                                 setTimeout(() => {
-                                    fetch('/api/chess/ai-move', {
+                                    fetch('${import.meta.env.VITE_API_BASE}/api/chess/ai-move', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ sessionId })
                                     })
-                                        .then(() => fetch('/api/chess/state', {
+                                        .then(() => fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ sessionId })
@@ -155,7 +155,7 @@ function useChessGame() {
 
 
     const fetchStatus = () => {
-        fetch('/api/chess/status', {
+        fetch('${import.meta.env.VITE_API_BASE}/api/chess/status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId })

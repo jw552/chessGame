@@ -30,7 +30,7 @@ function ChessBoard({ board, turn, selected, onSquareClick, playerIsWhite }) {
     const fetchValidMoves = async (row, col) => {
         try {
             const sessionId = localStorage.getItem("sessionId"); // safely retrieve
-            const res = await fetch('/api/chess/valid-moves', {
+            const res = await fetch('${import.meta.env.VITE_API_BASE}/api/chess/valid-moves', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sessionId, row, col })

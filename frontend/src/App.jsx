@@ -7,17 +7,6 @@ import { formatMoveHistory } from './utils/formatMoveHistory';
 import PromotionModal from './components/PromotionModal';
 import './index.css';
 
-const getOrCreateSessionId = () => {
-    let sessionId = localStorage.getItem("sessionId");
-    if (!sessionId) {
-        sessionId = crypto.randomUUID(); // requires secure context (https)
-        localStorage.setItem("sessionId", sessionId);
-    }
-    return sessionId;
-};
-
-const sessionId = getOrCreateSessionId();
-
 function App() {
     const {
         board,
@@ -57,7 +46,7 @@ function App() {
     const timerRef = useRef(null);
 
     useEffect(() => {
-        fetch('/api/chess/state', {
+        fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId })
@@ -107,7 +96,7 @@ function App() {
     }, [turn, isCheckmate]);
 
     const handleReset = () => {
-        fetch('/api/chess/reset', {
+        fetch('${import.meta.env.VITE_API_BASE}/api/chess/reset', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId })
@@ -119,7 +108,7 @@ function App() {
                 setBlackTime(600000);
                 setHistory([]);
 
-                return fetch('/api/chess/state', {
+                return fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sessionId })
@@ -150,12 +139,12 @@ function App() {
                     (!data.whiteTurn && data.playerIsWhite);
                 if (isAITurn) {
                     setTimeout(() => {
-                        fetch('/api/chess/ai-move', {
+                        fetch('${import.meta.env.VITE_API_BASE}/api/chess/ai-move', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ sessionId })
                         })
-                            .then(() => fetch('/api/chess/state', {
+                            .then(() => fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ sessionId })
@@ -250,7 +239,7 @@ function App() {
             {showPromotion && (
                 <PromotionModal
                     onSelect={piece => {
-                        fetch('/api/chess/promote', {
+                        fetch('${import.meta.env.VITE_API_BASE}/api/chess/promote', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -262,7 +251,7 @@ function App() {
                             setShowPromotion(false);
                             setPromotionSquare(null);
 
-                            fetch('/api/chess/state', {
+                            fetch('${import.meta.env.VITE_API_BASE}/api/chess/state', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ sessionId })
